@@ -1,0 +1,253 @@
+{% comment %}
+ 
+Code created by JadePuma
+Instructions - https://jadepuma.com/blogs/shopify-tutorials/add-multiple-faq-sections-on-one-page
+Last editted - 14Sep22
+ 
+{% endcomment %}
+
+{% assign id = section.id %}
+{% assign padding_top = section.settings.padding_top %}
+{% assign padding_bottom = section.settings.padding_bottom %}
+{% assign width = section.settings.width %}
+{% assign border_color =  settings.border_color %}
+{% assign faq_icon_color =  settings.button_primary_bg_color %}
+
+
+{% style %}
+
+#shopify-section-{{ id }} {
+  padding-top: {{ padding_top }}px;
+  padding-bottom: {{ padding_bottom }}px;
+  {% if section.settings.width == 'wide' %}
+    width: 100%;
+  {% endif %}
+}
+
+.multiple_faq_container-{{ id }}{
+    padding: 0px 10px;
+    margin:20px auto;
+}
+.multiple_faq_heading-{{ id }}{
+  margin-bottom: 15px;
+  font-size:30px;
+  font-weight:400;
+}
+.multiple_faq_title-{{ id }}{
+  display:grid;
+  grid-template-columns: 42px auto;
+  font-size:21px;
+  padding: 20px 0px;
+  border-bottom:1px solid {{border_color}};
+}
+.multiple_faq_content-{{ id }}{
+  text-align:left;
+  display:none;
+  padding:20px 30px;
+
+}
+
+.accordian_content_heading-{{ id }}{
+    margin-top:30px;
+}
+
+.multiple_faq_title-{{ id }}:hover{
+  cursor:pointer;
+  background-color:#f8f8f8;
+}
+.faq_expand-{{ id }}{
+    transform:translateY(2px);
+    margin:0px 10px;
+}
+.faq_collapse-{{ id }}{
+    transform:translateY(2px);
+    margin:0px 10px;
+}
+
+@media only screen and (max-width: 600px) {
+.multiple_faq_content-{{ id }}{
+  text-align:left;
+  display:none;
+  padding:20px 10px;
+
+}
+}
+
+{% endstyle %}
+
+<section class="section 
+                is-width-{{ width }} 
+                ">
+  <div class="multiple_faq_container-{{ id }}">
+    {% if section.settings.title != blank %}
+      <h1 class="multiple_faq_heading-{{ id }}">{{section.settings.title}}</h1>
+    {% endif %}
+   
+    
+   {% for block in section.blocks %} 
+     <div class="multiple_faq_item item-{{ id }}">
+        <div class="multiple_faq_title-{{ id }}">
+          <div>
+            <span class="faq_expand-{{ id }} icon" data-icon="plus">
+              <svg style="color:{{faq_icon_color}};" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g id="plus">
+                  <polygon points="95 46 54 46 54 5 46 5 46 46 5 46 5 54 46 54 46 95 54 95 54 54 95 54 95 46"></polygon>
+                </g>
+              </svg>
+            </span>
+            <span class="faq_collapse-{{ id }} icon" style="display:none;" data-icon="minus">
+              <svg style="color:{{faq_icon_color}};" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g id="minus">
+                  <rect x="5" y="46" width="90" height="8"></rect>
+                </g>
+              </svg>
+            </span>
+          </div>
+          {{block.settings.title}}
+        </div>
+        <div class="multiple_faq_content-{{ id }}">
+          {{block.settings.answer}}
+        </div>
+      </div> 
+    {% endfor %}
+  </div>
+</section>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" ></script>
+
+<script>
+               
+    $('.item-{{ id }}').click(function(){
+    //get the clicked item
+    $clickedItem = $('.multiple_faq_content-{{ id }}',this);
+    $clickedItemIconExpand = $('.faq_expand-{{ id }}',this);
+    $clickedItemIconCollapse = $('.faq_collapse-{{ id }}',this);
+    // is the clicked item already open?
+    if(($clickedItem.hasClass('open'))){
+       //remove the class, slide it up and return early
+       
+        $clickedItem.removeClass('open').slideUp(300);
+        $clickedItemIconCollapse.toggle();
+        $clickedItemIconExpand.toggle();
+        return;
+    }
+  
+  {% if section.settings.auto_close %} 
+    $('.multiple_faq_content-{{ id }}').removeClass('open').slideUp(300);
+    document.querySelectorAll('.multiple_faq_content-{{ id }}').forEach((el, index)=>{
+      if (el.classList.contains("open")) {
+        document.querySelectorAll('.faq_expand-{{ id }}')[index].style.display = "none";
+        document.querySelectorAll('.faq_collapse-{{ id }}')[index].style.display = "block";
+      }
+      else{
+        document.querySelectorAll('.faq_expand-{{ id }}')[index].style.display = "block";
+        document.querySelectorAll('.faq_collapse-{{ id }}')[index].style.display = "none";
+      }
+    })       
+  {% endif %}
+        
+        
+    //slide down the clicked item and add the open class
+    $clickedItem.slideDown(300).addClass('open');
+    $clickedItemIconCollapse.toggle();
+    $clickedItemIconExpand.toggle();
+  }); 
+
+  //limit clickable aread to the faq title 
+  $( '.multiple_faq_content-{{ id }}' ).click(function() {
+    event.stopImmediatePropagation()
+  });               
+               
+       
+ </script>
+
+
+
+{% schema %}
+
+  {
+  "name": "Multiple FAQ",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "faq"
+    },
+    {
+    "type": "checkbox",
+    "id": "auto_close",
+    "label": "Open 1 at a time",
+    "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "default": "standard",
+      "options": [
+        {
+          "value": "standard",
+          "label": "Standard"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "min": 0,
+      "max": 80,
+      "default": 56,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "min": 0,
+      "max": 80,
+      "default": 56,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "FAQ",
+      "type": "faq",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Question",
+          "default": "What is your question?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Provide the answer to the question here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multiple FAQ",
+      "category": "Store information",
+      "blocks": [
+      ]
+    }
+  ]
+}
+
+{% endschema %}
